@@ -35,7 +35,8 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-    const foodCollection = client.db('restaurentManagement').collection('foodMenu');
+    const foodCollection = client.db('restaurentManagament').collection('foodMenu');
+    const contactCollection = client.db('restaurentManagement').collection('contacts');
 
     app.get('/menu', async (req, res) => {
       const items = req.body;
@@ -43,7 +44,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
-    
+
+    app.post('/contactus', async(req, res) => {
+      const message = req.body;
+      const result = await contactCollection.insertOne(message);
+      res.send(result);
+    })
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
