@@ -20,11 +20,11 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
 });
 
 async function run() {
@@ -37,13 +37,13 @@ async function run() {
 
     const foodCollection = client.db('restaurentManagement').collection('foodMenu');
 
-    app.get('/menu', async(req, res) => {
+    app.get('/menu', async (req, res) => {
       const items = req.body;
       const cursor = foodCollection.find(items);
       const result = await cursor.toArray();
       res.send(result);
     })
-
+    
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -53,9 +53,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('The Chefs are cooking, Come and take your food.');
+  res.send('The Chefs are cooking, Come and take your food.');
 })
 
 app.listen(port, () => {
-    console.log(`Foods are waiting at Chef's hand: ${port}`);
+  console.log(`Foods are waiting at Chef's hand: ${port}`);
 })
