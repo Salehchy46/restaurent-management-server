@@ -1,14 +1,43 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+  ],
+  credentials: true
+}));
 app.use(express.json())
 
+//distinctive middleware 
+const logger = (req, res, next) => {
+  console.log('Something to verify.');
+  next();
+}
+
+const verifyToken = (req, res, next) => {
+  console.log(verify);
+
+  const token = req?.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized Access" });
+  }
+
+  jwt.verify(token, process.env.JWT_Secret, (err, decode) => {
+    if (err) {
+      return res.status(401).send({ message: 'Unauthorized Access' })
+    }
+    req.user = decode;
+    next();
+  })
+}
 
 // uSER
 // pASSWORD
@@ -38,14 +67,35 @@ async function run() {
     const foodCollection = client.db('restaurentManagament').collection('foodMenu');
     const contactCollection = client.db('restaurentManagement').collection('contacts');
 
-    app.get('/menu', async (req, res) => {
+    //Auth related API's
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1hr' })
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: false,
+          // sameSite: false,
+        })
+        .send({ success: true });
+    })
+
+    app.post('/logout', (req, res) => {
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: false,
+      })
+      .send({success: true})
+    })
+
+    app.get('/menu', verifyToken, async (req, res) => {
       const items = req.body;
       const cursor = foodCollection.find(items);
       const result = await cursor.toArray();
       res.send(result);
     })
 
-    app.post('/contactus', async(req, res) => {
+    app.post('/contactus', logger, verifyToken, async (req, res) => {
       const message = req.body;
       const result = await contactCollection.insertOne(message);
       res.send(result);
