@@ -14,7 +14,8 @@ app.use(cors({
   ],
   credentials: true
 }));
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
 //distinctive middleware 
 const logger = (req, res, next) => {
@@ -23,18 +24,19 @@ const logger = (req, res, next) => {
 }
 
 const verifyToken = (req, res, next) => {
-  console.log(verify);
+  console.log('verify');
 
   const token = req?.cookies?.token;
   if (!token) {
     return res.status(401).send({ message: "Unauthorized Access" });
   }
 
-  jwt.verify(token, process.env.JWT_Secret, (err, decode) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
     if (err) {
       return res.status(401).send({ message: 'Unauthorized Access' })
     }
     req.user = decode;
+    console.log('Decoded Token:', decode);
     next();
   })
 }
@@ -64,7 +66,7 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-    const foodCollection = client.db('restaurentManagament').collection('foodMenu');
+    const foodCollection = client.db('restaurentManagement').collection('foodMenu');
     const contactCollection = client.db('restaurentManagement').collection('contacts');
 
     //Auth related API's
@@ -89,7 +91,7 @@ async function run() {
     })
 
     app.get('/menu', verifyToken, async (req, res) => {
-      const items = req.body;
+      const items = req.query;
       const cursor = foodCollection.find(items);
       const result = await cursor.toArray();
       res.send(result);
