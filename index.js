@@ -87,7 +87,7 @@ async function run() {
         httpOnly: true,
         secure: false,
       })
-      .send({success: true})
+        .send({ success: true })
     })
 
     app.get('/menu', verifyToken, async (req, res) => {
@@ -97,9 +97,27 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/menu/:id', verifyToken, async(req, res) => {
+    app.get('/menuByPage', async (req, res) => {
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+
+      console.log('pagination', page, size);
+      const result = await foodCollection.find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+      
+      res.send(result);
+    })
+
+    app.get('/productPages', async(req, res) => {
+      const count = await foodCollection.estimatedDocumentCount();
+      res.send({ count })
+    })
+
+    app.get('/menu/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
-      const query = { _id : new ObjectId(id) };
+      const query = { _id: new ObjectId(id) };
       const result = await foodCollection.findOne(query);
       res.send(result);
     })
