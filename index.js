@@ -68,6 +68,7 @@ async function run() {
 
     const foodCollection = client.db('restaurentManagement').collection('foodMenu');
     const contactCollection = client.db('restaurentManagement').collection('contacts');
+    const ordersCollection = client.db('restaurentManagement').collection('orders');
 
     //Auth related API's
     app.post('/jwt', async (req, res) => {
@@ -119,6 +120,21 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.post('/ProductsByIds', async(req, res) => {
+      const ids = req.body;
+      const idsWithObjectId = ids.map(id => new ObjectId(id))
+      console.log(idsWithObjectId);
+
+      const query = {
+        _id : {
+          $in : idsWithObjectId
+        }
+      }
+      
+      const result = await ordersCollection.find(query).toArray();
       res.send(result);
     })
 
