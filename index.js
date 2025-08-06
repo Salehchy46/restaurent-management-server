@@ -11,6 +11,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'https://console.firebase.google.com/project/restaurent-management-client/overview',
+    'https://restaurent-management-client.web.app',
   ],
   credentials: true
 }));
@@ -123,7 +125,7 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/ProductsByIds', async(req, res) => {
+    app.post('/productsByIds', async(req, res) => {
       const ids = req.body;
       const idsWithObjectId = ids.map(id => new ObjectId(id))
       console.log(idsWithObjectId);
@@ -133,7 +135,7 @@ async function run() {
           $in : idsWithObjectId
         }
       }
-      
+
       const result = await ordersCollection.find(query).toArray();
       res.send(result);
     })
